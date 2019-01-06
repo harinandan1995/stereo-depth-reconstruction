@@ -4,7 +4,7 @@
 
 #include <opencv2/imgcodecs.hpp>
 #include <opencv/cv.hpp>
-#include "DepthEstimation.h"
+#include "BlockMatching.h"
 
 namespace stereo_depth
 {
@@ -83,8 +83,29 @@ namespace stereo_depth
 
     }
 
-    cv::Mat BlockMatching::generateDisparitzMap(cv::Mat left_image, cv::Mat right_image) {
+    Eigen::MatrixXi BlockMatching::generateDisparitzMap(cv::Mat left_image, cv::Mat right_image) {
 
+        Eigen::MatrixXi disparity_map = Eigen::MatrixXi::Constant(IMAGE_WIDTH, IMAGE_HEIGHT, 0);;
+
+        for(int i = 0; i < IMAGE_WIDTH; i++) {
+            for(int j = 0; j < IMAGE_WIDTH; j++) {
+
+                double min_SADintensity = std::numeric_limits<double>::max();
+
+                for(int k = -MAX_DISPARITY; k < MAX_DISPARITY; k++) {
+                    if (k == 0) continue;
+                    if (i+k <0 || i+k >= IMAGE_WIDTH) continue;
+
+                    double SADIntensity = getSADIntensities(cv::Point2i(i, j), cv::Point2i(i+k, j), left_image, right_image);
+                    if (SADIntensity < min_SADintensity) {
+                        disparity_map(i, j) = k;
+                    }
+
+                }
+            }
+        }
+
+        return disparity_map;
 
     }
 

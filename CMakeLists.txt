@@ -33,7 +33,7 @@ set(BUILD_SHARED_LIBS ON)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # -> build libs
-add_library(block_matching STATIC src/DepthEstimation.cpp)
+add_library(block_matching STATIC src/BlockMatching.cpp)
 add_library(stereo_dataset STATIC src/Dataset.cpp)
 # <- build libs
 
