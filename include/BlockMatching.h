@@ -31,7 +31,7 @@ namespace stereo_depth
 
         BlockMatching(int block_size_x, int block_size_y, int IMAGE_WIDTH, int IMAGE_HEIGHT, int MAX_DISPARITY);
 
-        Eigen::MatrixXi generateDisparitzMap(cv::Mat left_image, cv::Mat right_image);
+        Eigen::MatrixXi generateDisparityMap(cv::Mat left_image, cv::Mat right_image);
 
     };
 

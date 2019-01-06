@@ -17,6 +17,9 @@ namespace stereo_depth
         int num_frames;
         int counter = 0;
 
+        Eigen::Matrix3f left_camera_intrinsics;
+        Eigen::Matrix3f right_camera_intrinsics;
+
 
     public:
 
@@ -25,6 +28,10 @@ namespace stereo_depth
         int getNumberOfFrames();
 
         int getNumberOfFramesLeft();
+
+        Eigen::Matrix3f getLeftCameraIntrinsics();
+
+        Eigen::Matrix3f getRightCameraIntrinsics();
 
         // Left image will be at 0 index, right image will be at 1 index
         std::vector<cv::Mat> getNextFrame();

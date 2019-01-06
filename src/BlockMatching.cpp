@@ -79,11 +79,14 @@ namespace stereo_depth
         cv::Mat left_block = left_image(cv::Range(tl_point_left.x, br_point_left.x), cv::Range(tl_point_left.y, br_point_left.y));
         cv::Mat right_block = right_image(cv::Range(tl_point_right.x, br_point_right.x), cv::Range(tl_point_right.y, br_point_right.y));
 
-        return cv::sum( cv::abs(left_block-right_block) )[0];
+        cv::Mat intensity_diff;
+        cv::absdiff(left_block, right_block, intensity_diff);
+
+        return cv::sum(intensity_diff )[0];
 
     }
 
-    Eigen::MatrixXi BlockMatching::generateDisparitzMap(cv::Mat left_image, cv::Mat right_image) {
+    Eigen::MatrixXi BlockMatching::generateDisparityMap(cv::Mat left_image, cv::Mat right_image) {
 
         Eigen::MatrixXi disparity_map = Eigen::MatrixXi::Constant(IMAGE_WIDTH, IMAGE_HEIGHT, 0);;
 
@@ -98,7 +101,7 @@ namespace stereo_depth
 
                     double SADIntensity = getSADIntensities(cv::Point2i(i, j), cv::Point2i(i+k, j), left_image, right_image);
                     if (SADIntensity < min_SADintensity) {
-                        disparity_map(i, j) = k;
+                        disparity_map(j, i) = k;
                     }
 
                 }

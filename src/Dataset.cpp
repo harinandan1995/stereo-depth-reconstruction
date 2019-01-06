@@ -14,6 +14,9 @@ namespace stereo_depth
         this->num_frames = num_frames;
         this->path = path;
 
+        this->left_camera_intrinsics << 6338.47, 0, 1035.675, 0, 6338.47, 960.073, 0, 0, 1;
+        this->right_camera_intrinsics << 6338.47, 0, 1515.164, 0, 6338.47, 960.073, 0, 0, 1;
+
     }
 
     int StereoDataset::getNumberOfFrames() {
@@ -25,6 +28,18 @@ namespace stereo_depth
     int StereoDataset::getNumberOfFramesLeft() {
 
         return num_frames - counter;
+
+    }
+
+    Eigen::Matrix3f StereoDataset::getLeftCameraIntrinsics() {
+
+        return this->left_camera_intrinsics;
+
+    }
+
+    Eigen::Matrix3f StereoDataset::getRightCameraIntrinsics() {
+
+        return this->right_camera_intrinsics;
 
     }
 
