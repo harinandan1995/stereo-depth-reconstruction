@@ -2,6 +2,7 @@
 // Created by harinandan on 06.01.19.
 //
 
+#include <iostream>
 #include "Triangulation.h"
 
 namespace stereo_depth {
@@ -18,6 +19,10 @@ namespace stereo_depth {
     }
 
     float Triangulation::getDepthFromDisparity(int disparity) {
+
+        return  disparity;
+
+        if(disparity == 0) return 0;
 
         return abs(left_focal_length*baseline/disparity);
 

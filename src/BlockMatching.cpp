@@ -4,6 +4,7 @@
 
 #include <opencv2/imgcodecs.hpp>
 #include <opencv/cv.hpp>
+#include <iostream>
 #include "BlockMatching.h"
 
 namespace stereo_depth
@@ -50,16 +51,16 @@ namespace stereo_depth
         int max_diff_x = (int) ceil(this->block_size_x/2);
         int max_diff_y = (int) ceil(this->block_size_y/2);
 
-        if(current_point.x + max_diff_x < IMAGE_WIDTH) {
+        if(current_point.x + max_diff_x < IMAGE_HEIGHT) {
             bottomRightPoint.x = current_point.x + max_diff_x;
         } else {
-            bottomRightPoint.x = IMAGE_WIDTH-1;
+            bottomRightPoint.x = IMAGE_HEIGHT-1;
         }
 
-        if(current_point.y + max_diff_y < IMAGE_HEIGHT) {
+        if(current_point.y + max_diff_y < IMAGE_WIDTH) {
             bottomRightPoint.y = current_point.y + max_diff_y;
         } else {
-            bottomRightPoint.y = IMAGE_HEIGHT-1;
+            bottomRightPoint.y = IMAGE_WIDTH-1;
         }
 
         return bottomRightPoint;
@@ -68,6 +69,8 @@ namespace stereo_depth
 
     double BlockMatching::getSADIntensities(cv::Point2i left_point, cv::Point2i right_point, cv::Mat &left_image,
                                       cv::Mat &right_image) {
+
+        // std::cout << left_point.x << " " << left_point.y << " " << right_point.x << " " << right_point.y << std::endl;
 
         cv::Point2i tl_point_left = getTopLeftPoint(left_point);
         cv::Point2i br_point_left = getBottomRightPoint(left_point);
@@ -88,25 +91,26 @@ namespace stereo_depth
 
     Eigen::MatrixXi BlockMatching::generateDisparityMap(cv::Mat left_image, cv::Mat right_image) {
 
-        Eigen::MatrixXi disparity_map = Eigen::MatrixXi::Constant(IMAGE_WIDTH, IMAGE_HEIGHT, 0);;
+        Eigen::MatrixXi disparity_map = Eigen::MatrixXi::Zero(IMAGE_HEIGHT, IMAGE_WIDTH);
 
-        for(int i = 0; i < IMAGE_WIDTH; i++) {
-            for(int j = 0; j < IMAGE_WIDTH; j++) {
+        for(int x = 60; x < IMAGE_HEIGHT-60; x++) {
+            for(int y = 60; y < IMAGE_WIDTH-60; y++) {
+                double min_SADIntensity = std::numeric_limits<double>::max();
 
-                double min_SADintensity = std::numeric_limits<double>::max();
+                for(int k = -MAX_DISPARITY; k <= 0; k++) {
+                    if (y+k <0 || y+k >= IMAGE_WIDTH) continue;
 
-                for(int k = -MAX_DISPARITY; k < MAX_DISPARITY; k++) {
-                    if (k == 0) continue;
-                    if (i+k <0 || i+k >= IMAGE_WIDTH) continue;
-
-                    double SADIntensity = getSADIntensities(cv::Point2i(i, j), cv::Point2i(i+k, j), left_image, right_image);
-                    if (SADIntensity < min_SADintensity) {
-                        disparity_map(j, i) = k;
+                    double SADIntensity = getSADIntensities(cv::Point2i(x, y), cv::Point2i(x, y+k), left_image, right_image);
+                    if (SADIntensity < min_SADIntensity) {
+                        min_SADIntensity = SADIntensity;
+                        disparity_map(x, y) = k;
                     }
 
                 }
             }
         }
+
+        std::cout << disparity_map.minCoeff() << " " << disparity_map.maxCoeff() << " " << disparity_map.mean() << " " << disparity_map.rows() << " " << disparity_map.cols() << std::endl;
 
         return disparity_map;
 

@@ -51,23 +51,23 @@ namespace stereo_depth
             return std::vector<cv::Mat>();
         }
 
-        std::vector<cv::Mat> next_frame(2);
+        std::vector<cv::Mat> next_frame;
 
-        std::string filename_rgb_left_cam = std::string(path + "/") + "im0.png";
+        std::string filename_rgb_left_cam = std::string(path + "/") + "left.png";
         cv::Mat gray_8u_left_cam = cv::imread(filename_rgb_left_cam, cv::IMREAD_GRAYSCALE);
         if (gray_8u_left_cam.empty()){
             std::cout << "Could not read left camera image for " << counter << std::endl;
             std::exit(-1);
         }
-        next_frame[0] = gray_8u_left_cam;
+        next_frame.push_back(gray_8u_left_cam);
 
-        std::string filename_rgb_right_cam = std::string(path + "/") + "im1.png";
-        cv::Mat gray_8u_right_cam = cv::imread(filename_rgb_left_cam, cv::IMREAD_GRAYSCALE);
+        std::string filename_rgb_right_cam = std::string(path + "/") + "right.png";
+        cv::Mat gray_8u_right_cam = cv::imread(filename_rgb_right_cam, cv::IMREAD_GRAYSCALE);
         if (gray_8u_right_cam.empty()){
             std::cout << "Could not read left camera image for " << counter << std::endl;
             std::exit(-1);
         }
-        next_frame[1] = gray_8u_right_cam;
+        next_frame.push_back(gray_8u_right_cam);
 
         counter++;
 
