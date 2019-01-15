@@ -13,8 +13,7 @@ namespace stereo_depth
 
     class BlockMatching {
 
-        int block_size_x;
-        int block_size_y;
+        int block_range;
 
         int IMAGE_WIDTH;
         int IMAGE_HEIGHT;
@@ -23,13 +22,9 @@ namespace stereo_depth
 
         double getSADIntensities(cv::Point2i left_point, cv::Point2i right_point, cv::Mat &left_image, cv::Mat &right_image);
 
-        cv::Point2i getTopLeftPoint(cv::Point2i current_point);
-
-        cv::Point2i getBottomRightPoint(cv::Point2i current_point);
-
     public:
 
-        BlockMatching(int block_size_x, int block_size_y, int IMAGE_WIDTH, int IMAGE_HEIGHT, int MAX_DISPARITY);
+        BlockMatching(int block_range, int IMAGE_WIDTH, int IMAGE_HEIGHT, int MAX_DISPARITY);
 
         Eigen::MatrixXi generateDisparityMap(cv::Mat left_image, cv::Mat right_image);
 
