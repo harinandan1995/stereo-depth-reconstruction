@@ -27,20 +27,13 @@ int main() {
 
         std::cout<< next_frame[0].cols << " " << next_frame[0].rows << std::endl;
 
-        cv::namedWindow("Left Image", cv::WINDOW_NORMAL);
-        cv::resizeWindow("Left Image", 600,600);
-        cv::imshow( "Left Image", next_frame[0]);
 
-        cv::namedWindow("Right Image", cv::WINDOW_NORMAL);
-        cv::resizeWindow("Right Image", 600,600);
-        cv::imshow( "Right Image", next_frame[1]);
-
-        cv::namedWindow("Depth Image", cv::WINDOW_NORMAL);
-        cv::resizeWindow("Depth Image", 600,600);
 
         clock_t begin = clock();
 
         cv::imshow("Depth Image", depthReconstruction->getDepthMapFromStereoImages(next_frame[0], next_frame[1]));
+
+        imwrite( "~/Downloads/depth.jpg", depthReconstruction->getDepthMapFromStereoImages(next_frame[0], next_frame[1]) );
 
         clock_t end = clock();
         double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;

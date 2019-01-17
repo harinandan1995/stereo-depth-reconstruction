@@ -22,6 +22,10 @@ namespace stereo_depth
 
         double getSADIntensities(cv::Point2i left_point, cv::Point2i right_point, cv::Mat &left_image, cv::Mat &right_image);
 
+        cv::Mat computeLeftBlock(cv::Point2i left_point, cv::Mat &left_image);
+
+        cv::Mat computeRightBlock(cv::Point2i left_point, cv::Point2i right_point, cv::Mat &right_image);
+
     public:
 
         BlockMatching(int block_range, int IMAGE_WIDTH, int IMAGE_HEIGHT, int MAX_DISPARITY);
