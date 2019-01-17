@@ -26,17 +26,23 @@ int main() {
         std::vector<cv::Mat> next_frame = stereoDataset->getNextFrame();
 
         std::cout<< next_frame[0].cols << " " << next_frame[0].rows << std::endl;
+        cv::namedWindow("Left Image", cv::WINDOW_NORMAL);
+        cv::resizeWindow("Left Image", next_frame[0].cols, next_frame[0].rows);
+        cv::imshow( "Left Image", next_frame[0]);
 
+        cv::resizeWindow("Right Image", next_frame[1].cols, next_frame[1].rows);
+        cv::namedWindow("Right Image", cv::WINDOW_NORMAL);
+        cv::imshow( "Right Image", next_frame[1]);
 
-
+        cv::namedWindow("Depth Image", cv::WINDOW_NORMAL);
         clock_t begin = clock();
-
-        cv::imshow("Depth Image", depthReconstruction->getDepthMapFromStereoImages(next_frame[0], next_frame[1]));
-
-        imwrite( "~/Downloads/depth.jpg", depthReconstruction->getDepthMapFromStereoImages(next_frame[0], next_frame[1]) );
-
+        cv::Mat depth_image = depthReconstruction->getDepthMapFromStereoImages(next_frame[0], next_frame[1]);
         clock_t end = clock();
         double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+
+
+        cv::resizeWindow("Depth Image",  depth_image.cols, depth_image.rows);
+        cv::imshow("Depth Image", depth_image);
 
         std::cout << "Time Elapsed : " << elapsed_secs << std::endl;
 

@@ -21,47 +21,6 @@ namespace stereo_depth
 
     }
 
-    cv::Mat BlockMatching::computeLeftBlock(cv::Point2i left_point, cv::Mat &left_image) {
-
-        int negative_range_x = std::min(left_point.x, block_range);
-        int negative_range_y = std::min(left_point.y, block_range);
-
-        int positive_range_x = std::min(IMAGE_HEIGHT - left_point.x - 1, block_range);
-        int positive_range_y = std::min(IMAGE_WIDTH - left_point.y - 1, block_range);
-
-        //std::cout << negative_range_x << " " << negative_range_y << " " << positive_range_x << " " << positive_range_y << std::endl;
-
-        cv::Range left_block_range_x = cv::Range(left_point.x-negative_range_x, left_point.x + positive_range_x);
-        cv::Range left_block_range_y = cv::Range(left_point.y-negative_range_y, left_point.y + positive_range_y);
-
-        return left_image(left_block_range_x, left_block_range_y);
-
-    }
-
-    cv::Mat BlockMatching::computeRightBlock(cv::Point2i left_point, cv::Point2i right_point, cv::Mat &right_image) {
-
-        int negative_range_x = std::min(std::min(left_point.x, block_range), right_point.x);
-        int negative_range_y = std::min(std::min(left_point.y, block_range), right_point.y);
-
-        int positive_range_x = std::min(std::min(IMAGE_HEIGHT - left_point.x - 1, block_range), IMAGE_HEIGHT - right_point.x - 1);
-        int positive_range_y = std::min(std::min(IMAGE_WIDTH - left_point.y - 1, block_range), IMAGE_WIDTH - right_point.y - 1);
-
-        cv::Range right_block_range_x = cv::Range(right_point.x-negative_range_x, right_point.x + positive_range_x);
-        cv::Range right_block_range_y = cv::Range(right_point.y-negative_range_y, right_point.y + positive_range_y);
-
-        return right_image(right_block_range_x, right_block_range_y);
-
-    }
-
-    double computeSAD(cv::Mat left_block, cv::Mat right_block) {
-
-        cv::Mat intensity_diff;
-        cv::absdiff(left_block, right_block, intensity_diff);
-
-        return cv::sum(intensity_diff)[0];
-
-    }
-
     double BlockMatching::getSADIntensities(cv::Point2i left_point, cv::Point2i right_point, cv::Mat &left_image,
                                       cv::Mat &right_image) {
 
@@ -75,73 +34,48 @@ namespace stereo_depth
 
         //std::cout << negative_range_x << " " << negative_range_y << " " << positive_range_x << " " << positive_range_y << std::endl;
 
-        cv::Range left_block_range_x = cv::Range(left_point.x-negative_range_x, left_point.x + positive_range_x);
-        cv::Range left_block_range_y = cv::Range(left_point.y-negative_range_y, left_point.y + positive_range_y);
+        double sad = 0;
 
-        cv::Range right_block_range_x = cv::Range(right_point.x-negative_range_x, right_point.x + positive_range_x);
-        cv::Range right_block_range_y = cv::Range(right_point.y-negative_range_y, right_point.y + positive_range_y);
+        for(int i = -negative_range_x; i < positive_range_x+1; i++) {
+            for(int j = -negative_range_y; j < positive_range_y+1; j++) {
+                //std::cout<< (double) left_image.at<uchar>(left_point.x + i, left_point.y + j) <<std::endl;
 
-        // cv::Rect left_block_range(left_point.x-negative_range_x, left_point.y-negative_range_y, negative_range_x + positive_range_x + 1, negative_range_y + positive_range_y + 1);
+                sad += abs((double)left_image.at<uchar>(left_point.x + i, left_point.y + j) - (double)right_image.at<uchar>(right_point.x + i, right_point.y + j) );
+                //std::cout << sad << std::endl;
+            }
+        }
 
-        //std::cout << left_block_range_x << left_block_range_y << right_block_range_x << right_block_range_y << std::endl;
-
-        cv::Mat left_block = left_image(left_block_range_x, left_block_range_y);
-        cv::Mat right_block = right_image(right_block_range_x, right_block_range_y);
-
-        cv::Mat intensity_diff;
-        cv::absdiff(left_block, right_block, intensity_diff);
-
-        return cv::sum(intensity_diff)[0];
-
+        return sad;
     }
 
-    Eigen::MatrixXi BlockMatching::generateDisparityMap(cv::Mat left_image, cv::Mat right_image) {
+    Eigen::MatrixXi BlockMatching::generateDisparityMap(cv::Mat &left_image, cv::Mat &right_image) {
 
         Eigen::MatrixXi disparity_map = Eigen::MatrixXi::Zero(IMAGE_HEIGHT, IMAGE_WIDTH);
         cv::Mat dx_left, dx_right;
 
         cv::Sobel(left_image, dx_left, CV_64F, 1, 0, 5);
         cv::Sobel(right_image, dx_right, CV_64F, 1, 0, 5);
-        //cv::Sobel(left_image, dy, CV_64F, 0, 1, 5);
 
         int counter = 0, total = 0;
 
         for(int x = 0; x < IMAGE_HEIGHT; x++) {
             for(int y = 0; y < IMAGE_WIDTH; y++) {
-
                 total++;
-                // std::cout << abs(dx.at<double>(x, y)) <<std::endl;
-
-                if(abs(dx_left.at<double>(x, y)) < 3000) continue;
+                if(abs(dx_left.at<double>(x, y)) < 1500) continue;
 
                 counter++;
                 double min_SADIntensity = std::numeric_limits<double>::max();
 
-
                 cv::Point2i left_point(x, y);
-                cv::Mat left_block = computeLeftBlock(left_point, left_image);
 
                 for(int k = 0; k >= -MAX_DISPARITY; k--) {
                     if (y+k <0 || y+k >= IMAGE_WIDTH) continue;
 
-                    if(abs(dx_right.at<double>(x, y+k)) < 3000) continue;
+                    //if(abs(dx_right.at<double>(x, y+k)) < 2500) continue;
 
-                    double SADIntensity;
                     cv::Point2i right_point(x, y+k);
 
-                    int negative_range_x = std::min(std::min(left_point.x, block_range), right_point.x);
-                    int negative_range_y = std::min(std::min(left_point.y, block_range), right_point.y);
-
-                    int positive_range_x = std::min(std::min(IMAGE_HEIGHT - left_point.x - 1, block_range), IMAGE_HEIGHT - right_point.x - 1);
-                    int positive_range_y = std::min(std::min(IMAGE_WIDTH - left_point.y - 1, block_range), IMAGE_WIDTH - right_point.y - 1);
-
-                    if(negative_range_x != block_range || negative_range_y != block_range || positive_range_x != block_range || positive_range_y != block_range) {
-                        SADIntensity = getSADIntensities(cv::Point2i(x, y), cv::Point2i(x, y+k), left_image, right_image);
-                    } else {
-                        cv::Mat right_block = computeRightBlock(left_point, right_point, right_image);
-                        SADIntensity = computeSAD(left_block, right_block);
-                    }
-
+                    double SADIntensity = getSADIntensities(left_point, right_point, left_image, right_image);
 
                     if (SADIntensity < min_SADIntensity) {
                         min_SADIntensity = SADIntensity;

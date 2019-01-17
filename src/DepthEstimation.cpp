@@ -8,7 +8,7 @@
 namespace stereo_depth
 {
 
-    const int BLOCK_SIZE = 2;
+    const int BLOCK_SIZE = 3;
     const int MAX_DISPARITY = 50;
 
     DepthReconstruction::DepthReconstruction(int IMAGE_WIDTH, int IMAGE_HEIGHT, Eigen::Matrix3f left_camera_intrinsic_parameters,
